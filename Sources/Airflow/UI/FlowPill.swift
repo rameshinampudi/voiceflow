@@ -1,8 +1,17 @@
 import AppKit
 import SwiftUI
 
+/// What the resting bar says about Airflow.
+enum IdleStatus: Equatable {
+    case ready
+    case needsPermission(String)
+    case preparing(String)
+}
+
 enum PillState: Equatable {
     case hidden
+    /// Always-on resting indicator: a small breathing dot.
+    case idle(IdleStatus)
     case listening(command: Bool, handsFree: Bool)
     case processing(command: Bool)
     case message(String, isError: Bool)
@@ -10,54 +19,71 @@ enum PillState: Equatable {
 
 @MainActor
 final class PillModel: ObservableObject {
-    static let barCount = 16
     @Published var state: PillState = .hidden
-    @Published var levels: [CGFloat] = Array(repeating: 0, count: PillModel.barCount)
+    /// Smoothed microphone level, 0…1 (fast attack, slow release, like a VU meter).
+    @Published var level: CGFloat = 0
 
-    func push(level: Float) {
-        var next = levels
-        next.removeFirst()
-        next.append(CGFloat(level))
-        levels = next
+    func push(level raw: Float) {
+        let target = CGFloat(raw)
+        level = target > level ? level + (target - level) * 0.65 : level * 0.82 + target * 0.18
     }
 
-    func resetLevels() {
-        levels = Array(repeating: 0, count: Self.barCount)
-    }
+    func resetLevel() { level = 0 }
 }
 
-/// The small floating capsule at the bottom of the screen (Wispr's "Flow bar").
+/// The floating bar at the bottom of the screen (Wispr's "Flow bar").
+/// At rest it's a small breathing dot so you can see Airflow is running; while you talk it
+/// grows into a live voice meter.
 @MainActor
 final class FlowPillController {
     let model = PillModel()
     private var panel: NSPanel?
     private var hideWork: DispatchWorkItem?
+    private var restingState: PillState = .hidden
 
-    var isVisible: Bool { panel?.isVisible ?? false }
-
+    /// Shows activity (listening / processing / message).
     func show(_ state: PillState) {
         hideWork?.cancel()
         if case .listening = state {
-            if case .listening = model.state {} else { model.resetLevels() }
+            if case .listening = model.state {} else { model.resetLevel() }
         }
-        model.state = state
-        let panel = self.panel ?? makePanel()
-        self.panel = panel
-        position(panel)
-        panel.orderFrontRegardless()
+        present(state)
     }
 
-    func hide() {
+    /// Back to the resting dot (or nothing, if the idle bar is turned off).
+    func rest() {
         hideWork?.cancel()
-        model.state = .hidden
-        panel?.orderOut(nil)
+        present(restingState)
     }
 
     func flash(_ text: String, isError: Bool, seconds: Double = 2.6) {
         show(.message(text, isError: isError))
-        let work = DispatchWorkItem { [weak self] in self?.hide() }
+        let work = DispatchWorkItem { [weak self] in self?.rest() }
         hideWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: work)
+    }
+
+    /// Updates the resting indicator; applied immediately if nothing else is showing.
+    func setIdle(_ status: IdleStatus, visible: Bool) {
+        let resting: PillState = visible ? .idle(status) : .hidden
+        guard resting != restingState else { return }
+        restingState = resting
+        switch model.state {
+        case .hidden, .idle: present(resting)
+        default: break
+        }
+    }
+
+    private func present(_ state: PillState) {
+        model.state = state
+        if state == .hidden {
+            panel?.orderOut(nil)
+            return
+        }
+        let panel = self.panel ?? makePanel()
+        self.panel = panel
+        position(panel)
+        panel.orderFrontRegardless()
     }
 
     private func makePanel() -> NSPanel {
@@ -79,9 +105,14 @@ final class FlowPillController {
     private func position(_ panel: NSPanel) {
         guard let frame = (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame else { return }
         let size = panel.frame.size
-        panel.setFrameOrigin(NSPoint(x: frame.midX - size.width / 2, y: frame.minY + 12))
+        panel.setFrameOrigin(NSPoint(x: frame.midX - size.width / 2, y: frame.minY + 8))
     }
 }
+
+// MARK: - Views
+
+private let airflowCyan = Color(red: 0.45, green: 0.80, blue: 1.0)
+private let airflowViolet = Color(red: 0.62, green: 0.55, blue: 1.0)
 
 struct PillView: View {
     @ObservedObject var model: PillModel
@@ -89,34 +120,54 @@ struct PillView: View {
     var body: some View {
         VStack {
             Spacer(minLength: 0)
-            if model.state != .hidden {
-                HStack(spacing: 10) { content }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 9)
-                    .background(Capsule().fill(Color(white: 0.08).opacity(0.92)))
-                    .overlay(Capsule().strokeBorder(Color.white.opacity(0.14), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
-                    .foregroundStyle(.white)
-            }
+            bar
         }
+        .padding(.bottom, 4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeOut(duration: 0.15), value: model.state)
+        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: model.state)
     }
 
-    @ViewBuilder private var content: some View {
+    @ViewBuilder private var bar: some View {
+        switch model.state {
+        case .hidden:
+            EmptyView()
+        case let .idle(status):
+            IdleBar(status: status)
+                .transition(.scale(scale: 0.7).combined(with: .opacity))
+        default:
+            HStack(spacing: 10) { activeContent }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(Color(white: 0.07).opacity(0.93)))
+                .overlay(Capsule().strokeBorder(Color.white.opacity(0.14), lineWidth: 1))
+                .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                .foregroundStyle(.white)
+                .transition(.scale(scale: 0.6).combined(with: .opacity))
+        }
+    }
+
+    @ViewBuilder private var activeContent: some View {
         switch model.state {
         case let .listening(command, handsFree):
-            Image(systemName: command ? "wand.and.stars" : "mic.fill")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(command ? Color.purple : Color.white)
-            WaveformView(levels: model.levels, tint: command ? .purple : .white)
+            let tint = command ? airflowViolet : airflowCyan
+            ZStack {
+                Circle()
+                    .fill(tint.opacity(0.28))
+                    .frame(width: 22, height: 22)
+                    .scaleEffect(1 + model.level * 0.7)
+                Image(systemName: command ? "wand.and.stars" : "mic.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 26, height: 26)
+            VoiceBars(level: model.level, tint: tint)
             if handsFree {
                 Text("⌥ to finish · esc to cancel")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.white.opacity(0.55))
             }
         case let .processing(command):
-            ProcessingDots(tint: command ? .purple : .white)
+            ProcessingDots(tint: command ? airflowViolet : airflowCyan)
         case let .message(text, isError):
             Image(systemName: isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                 .foregroundStyle(isError ? Color.orange : Color.green)
@@ -124,26 +175,83 @@ struct PillView: View {
                 .font(.system(size: 12, weight: .medium))
                 .lineLimit(2)
                 .frame(maxWidth: 380)
-        case .hidden:
+        case .hidden, .idle:
             EmptyView()
         }
     }
 }
 
-struct WaveformView: View {
-    let levels: [CGFloat]
-    let tint: Color
+/// The resting indicator: a softly breathing dot, plus a note when something needs attention.
+struct IdleBar: View {
+    let status: IdleStatus
+
+    private var color: Color {
+        switch status {
+        case .ready: return airflowCyan
+        case .needsPermission: return .orange
+        case .preparing: return airflowViolet
+        }
+    }
+
+    private var label: String? {
+        switch status {
+        case .ready: return nil
+        case let .needsPermission(text), let .preparing(text): return text
+        }
+    }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 3) {
-            ForEach(levels.indices, id: \.self) { index in
-                Capsule()
-                    .fill(tint.opacity(0.9))
-                    .frame(width: 3, height: 3 + min(1, levels[index]) * 19)
+        HStack(spacing: 6) {
+            TimelineView(.animation(minimumInterval: 1.0 / 15)) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                let breath = CGFloat(0.5 + 0.5 * sin(t * 2.0))
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.18 + 0.22 * breath))
+                        .frame(width: 11 + 7 * breath, height: 11 + 7 * breath)
+                    Circle()
+                        .fill(color)
+                        .frame(width: 7, height: 7)
+                }
+                .frame(width: 20, height: 20)
+            }
+            if let label {
+                Text(label)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.88))
+                    .padding(.trailing, 4)
             }
         }
-        .frame(height: 22)
-        .animation(.easeOut(duration: 0.08), value: levels)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(Capsule().fill(Color(white: 0.07).opacity(0.72)))
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+    }
+}
+
+/// Bars that bounce with your voice. Each bar wobbles at its own rate; the loudness scales them,
+/// so silence leaves a gentle shimmer and speech makes them jump.
+struct VoiceBars: View {
+    let level: CGFloat
+    let tint: Color
+    private static let envelope: [CGFloat] = [0.32, 0.45, 0.62, 0.78, 0.92, 1.0, 0.92, 0.78, 0.62, 0.45, 0.32]
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 40)) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            HStack(alignment: .center, spacing: 3) {
+                ForEach(0..<Self.envelope.count, id: \.self) { i in
+                    let speed = 7.0 + Double(i % 4) * 2.1
+                    let wobble = CGFloat(0.55 + 0.45 * sin(t * speed + Double(i) * 1.9))
+                    let shimmer = CGFloat(1.2 + 1.2 * sin(t * 3 + Double(i)))
+                    let height = 3 + shimmer + min(1, level * 1.25) * Self.envelope[i] * wobble * 20
+                    Capsule()
+                        .fill(tint)
+                        .frame(width: 3, height: height)
+                }
+            }
+            .frame(height: 26)
+        }
     }
 }
 
@@ -162,6 +270,6 @@ struct ProcessingDots: View {
                 }
             }
         }
-        .frame(height: 22)
+        .frame(height: 26)
     }
 }

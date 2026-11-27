@@ -97,6 +97,7 @@ final class AppController {
 
     func settingsChanged(old: AirflowConfig, new: AirflowConfig) {
         hotkeys.side = new.hotkeySide
+        if old.showIdleBar != new.showIdleBar { publishStatus() }
         if old.engine != new.engine || old.localeIdentifier != new.localeIdentifier {
             // Debounced: the language field changes on every keystroke.
             reprepareWork?.cancel()
@@ -115,6 +116,7 @@ final class AppController {
 
     private func installHotkeys() {
         if hotkeys.start() {
+            Log.app.notice("Hotkey listener active (accessibility trusted: \(Permissions.accessibilityTrusted))")
             accessibilityPoll?.invalidate()
             accessibilityPoll = nil
             publishStatus()
@@ -122,6 +124,7 @@ final class AppController {
         }
         // Not trusted yet — keep checking until the user flips the switch in System Settings.
         guard accessibilityPoll == nil else { return }
+        Log.app.notice("Hotkey listener not active: waiting for Accessibility permission")
         accessibilityPoll = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self, Permissions.accessibilityTrusted else { return }
@@ -196,6 +199,7 @@ final class AppController {
             try recorder.start { buffer in newSession.append(buffer) }
             session = newSession
         } catch {
+            Log.app.error("Capture failed to start: \(error.localizedDescription, privacy: .public)")
             captureError = error
         }
     }
@@ -257,7 +261,7 @@ final class AppController {
 
         guard seconds >= 0.3 else {
             activeSession.cancel()
-            pill.hide()
+            pill.rest()
             publishStatus()
             return
         }
@@ -289,6 +293,7 @@ final class AppController {
                     .run(transcript: raw, context: context)
 
                 let outcome = await TextInserter.insert(output.text, restoreClipboard: config.restoreClipboard)
+                Log.app.notice("Dictation inserted: \(seconds, format: .fixed(precision: 1))s audio, \(raw.count) → \(output.text.count) chars, AI \(output.aiUsed)")
                 lastInsertedText = output.text.trimmed
                 if config.keepHistory, !current.isSecureField {
                     history.add(HistoryEntry(
@@ -300,11 +305,12 @@ final class AppController {
                 } else if outcome == .pastedAndKeptOnClipboard {
                     pill.flash("Also copied to the clipboard", isError: false, seconds: 1.6)
                 } else {
-                    pill.hide()
+                    pill.rest()
                 }
             } catch PipelineError.emptyTranscript {
                 pill.flash("No speech detected", isError: false, seconds: 1.4)
             } catch {
+                Log.app.error("Dictation failed: \(error.localizedDescription, privacy: .public)")
                 // Never lose what was said: keep the raw transcript in History and for ⌃⌘V.
                 if let raw = transcript?.trimmed, !raw.isEmpty {
                     lastInsertedText = raw
@@ -337,7 +343,7 @@ final class AppController {
         capture = nil
         captureError = nil
         restoreOutputMute()
-        if !silent || pill.isVisible { pill.hide() }
+        if !silent { pill.rest() }
         publishStatus()
     }
 
@@ -378,7 +384,20 @@ final class AppController {
     // MARK: - Status
 
     private func publishStatus() {
-        onStatusChange?(currentStatus)
+        let status = currentStatus
+        onStatusChange?(status)
+        pill.setIdle(idleStatus(for: status), visible: settings.config.showIdleBar)
+    }
+
+    private func idleStatus(for status: AppStatus) -> IdleStatus {
+        if case .needsAccessibility = status {
+            return .needsPermission("Allow Accessibility so ⌥ works — see Airflow's menu")
+        }
+        if Permissions.microphoneStatus == .denied || Permissions.microphoneStatus == .restricted {
+            return .needsPermission("Microphone access is off")
+        }
+        if case let .preparing(detail) = status { return .preparing(detail) }
+        return .ready
     }
 
     var currentStatus: AppStatus {

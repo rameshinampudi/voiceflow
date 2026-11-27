@@ -111,6 +111,8 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
     public var muteAudioWhileDictating: Bool = false
     public var restoreClipboard: Bool = true
     public var keepHistory: Bool = true
+    /// Keep a small breathing dot at the bottom of the screen while Airflow is ready.
+    public var showIdleBar: Bool = true
 
     // Transcription
     public var engine: TranscriptionEngineKind = .appleOnDevice
@@ -156,7 +158,7 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case hotkeySide, playSounds, muteAudioWhileDictating, restoreClipboard, keepHistory
+        case hotkeySide, playSounds, muteAudioWhileDictating, restoreClipboard, keepHistory, showIdleBar
         case engine, localeIdentifier, whisperAPIBaseURL, whisperAPIKey, whisperAPIModel
         case whisperCppBinary, whisperCppModel
         case aiCleanupEnabled, anthropicAPIKey, claudeModel, claudeEffort, useScreenContext
@@ -177,6 +179,7 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
         muteAudioWhileDictating = value(.muteAudioWhileDictating, d.muteAudioWhileDictating)
         restoreClipboard = value(.restoreClipboard, d.restoreClipboard)
         keepHistory = value(.keepHistory, d.keepHistory)
+        showIdleBar = value(.showIdleBar, d.showIdleBar)
         engine = value(.engine, d.engine)
         localeIdentifier = value(.localeIdentifier, d.localeIdentifier)
         whisperAPIBaseURL = value(.whisperAPIBaseURL, d.whisperAPIBaseURL)

@@ -47,7 +47,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         controller.start()
 
-        // First run (or a permission was revoked): walk the user through it.
+        // First run (or a permission was revoked): walk the user through it. The system
+        // Accessibility prompt registers *this* signed build in System Settings, so the
+        // switch the user turns on is the one macOS actually checks.
+        if !Permissions.accessibilityTrusted {
+            Log.app.notice("Accessibility not granted; showing the system prompt")
+            Permissions.requestAccessibility()
+        }
         if !Permissions.accessibilityTrusted || Permissions.microphoneStatus != .authorized {
             settingsWindow.show(tab: .general)
         }

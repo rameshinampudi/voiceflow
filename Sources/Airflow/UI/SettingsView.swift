@@ -105,6 +105,7 @@ private struct GeneralTab: View {
             }
 
             Section("Behavior") {
+                Toggle("Show the Airflow dot at the bottom of the screen", isOn: $store.config.showIdleBar)
                 Toggle("Play start and stop sounds", isOn: $store.config.playSounds)
                 Toggle("Mute other audio while dictating", isOn: $store.config.muteAudioWhileDictating)
                 Toggle("Restore my clipboard after inserting", isOn: $store.config.restoreClipboard)
