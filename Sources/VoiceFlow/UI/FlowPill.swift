@@ -31,7 +31,7 @@ final class PillModel: ObservableObject {
     func resetLevel() { level = 0 }
 }
 
-/// The floating bar at the bottom of the screen (Wispr's "Flow bar").
+/// The floating bar at the bottom of the screen.
 /// At rest it's a small breathing dot so you can see VoiceFlow is running; while you talk it
 /// grows into a live voice meter.
 @MainActor

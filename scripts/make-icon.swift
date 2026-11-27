@@ -171,10 +171,13 @@ guard iconutil.terminationStatus == 0 else {
     exit(1)
 }
 
+// A plain PNG of the icon for the README (GitHub can't render .icns).
+try writePNG(renderAppIcon(pixels: 512), to: resources.appendingPathComponent("AppIcon.png"))
+
 try writePNG(renderMenuBarGlyph(pointWidth: 22, pointHeight: 16, pixelScale: 1),
              to: resources.appendingPathComponent("MenuBarIcon.png"))
 try writePNG(renderMenuBarGlyph(pointWidth: 22, pointHeight: 16, pixelScale: 2),
              to: resources.appendingPathComponent("MenuBarIcon@2x.png"))
 
-print("✔ Resources/AppIcon.icns, Resources/MenuBarIcon.png, Resources/MenuBarIcon@2x.png")
+print("✔ Resources/AppIcon.icns, Resources/AppIcon.png, Resources/MenuBarIcon.png, Resources/MenuBarIcon@2x.png")
 print("  preview: build/AppIcon.iconset/icon_512x512@2x.png")

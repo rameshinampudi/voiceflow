@@ -1,8 +1,12 @@
-# VoiceFlow
+<p align="center">
+  <img src="Resources/AppIcon.png" width="160" alt="VoiceFlow icon: a microphone whose sound waves turn into lines of typed text">
+</p>
 
-**A Wispr Flow clone for macOS.** Hold the Option key, talk, let go — and clean, punctuated text appears wherever your cursor is, in any app.
+<h1 align="center">VoiceFlow</h1>
 
-VoiceFlow recreates the core of [Wispr Flow](https://wisprflow.ai) as a small native menu-bar app you build and run yourself: push-to-talk dictation, AI editing that removes filler words and applies your self-corrections, per-app writing styles, a personal dictionary, snippets, and a voice Command Mode for rewriting selected text. It is a personal project and is not affiliated with or endorsed by Wispr.
+<p align="center"><b>Voice dictation for macOS.</b> Hold the Option key, talk, let go — and clean, punctuated text appears wherever your cursor is, in any app.</p>
+
+VoiceFlow is a small native menu-bar app you build and run yourself: push-to-talk dictation, AI editing that removes filler words and applies your self-corrections, per-app writing styles, a personal dictionary, snippets, and a voice Command Mode for rewriting selected text.
 
 ```
  hold ⌥ ──► microphone ──► speech-to-text ──► Claude edits ──► pasted at your cursor
@@ -12,11 +16,11 @@ VoiceFlow recreates the core of [Wispr Flow](https://wisprflow.ai) as a small na
 
 ## What it does
 
-| Wispr Flow feature | In VoiceFlow |
+| Feature | How it works |
 |---|---|
 | Hold a key to talk, release to insert | Hold **⌥ Option** (either side, or pick left/right) |
 | Hands-free mode | **Double-tap ⌥**; tap ⌥ again to finish, **Esc** to cancel |
-| Flow bar | Floating pill at the bottom of the screen with a live waveform |
+| Live indicator | A small breathing dot at the bottom of the screen shows VoiceFlow is ready; while you talk it grows into bars that move with your voice |
 | AI auto-edits | Claude removes "um/uh", applies "at 2, no wait, 3" → "at 3", fixes punctuation, formats lists, writes numbers/emails/URLs properly |
 | Context awareness | Reads the app you're in and the text before your cursor, so sentences continue naturally and names are spelled right |
 | Styles per app | Formal / Casual / Very casual / Technical, per category (email, work chat, personal chat, code, AI chats, other) |

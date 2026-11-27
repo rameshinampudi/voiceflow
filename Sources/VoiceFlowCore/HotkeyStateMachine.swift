@@ -49,7 +49,7 @@ public struct HotkeyResult: Equatable, Sendable {
     public static let none = HotkeyResult()
 }
 
-/// Push-to-talk on a modifier key, Wispr Flow style:
+/// Push-to-talk on a modifier key:
 /// - hold ⌥ → talk, release → insert
 /// - tap ⌥ twice → hands-free; tap ⌥ again to stop, Esc to cancel
 /// - hold ⌥ and add ⌃ → Command Mode

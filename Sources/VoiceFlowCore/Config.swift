@@ -29,7 +29,7 @@ public enum TranscriptionEngineKind: String, Codable, CaseIterable, Sendable, Id
     }
 }
 
-/// How the AI editor should shape the text — Wispr Flow calls these "styles".
+/// How the AI editor should shape the text for a kind of app.
 public enum WritingStyle: String, Codable, CaseIterable, Sendable, Identifiable {
     case formal, casual, veryCasual, technical
     public var id: String { rawValue }
