@@ -341,9 +341,11 @@ private struct RemoveButton: View {
 
 private struct HistoryTab: View {
     @ObservedObject var history: HistoryStore
+    @StateObject private var search = DraftText()
 
     var body: some View {
         let stats = history.stats()
+        let results = history.search(search.text)
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 28) {
                 StatView(title: "Words today", value: "\(stats.wordsToday)")
@@ -353,13 +355,20 @@ private struct HistoryTab: View {
                 Button("Clear History", role: .destructive) { history.clear() }
                     .disabled(history.entries.isEmpty)
             }
+            HStack {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField("Search everything you've said", text: $search.text)
+                    .textFieldStyle(.roundedBorder)
+            }
             if history.entries.isEmpty {
                 ContentUnavailableView(
                     "No dictations yet", systemImage: "waveform",
-                    description: Text("Hold ⌥ anywhere and start talking."))
+                    description: Text("Hold ⌥ anywhere and start talking. Everything you say is kept here to copy and paste anywhere."))
+            } else if results.isEmpty {
+                ContentUnavailableView.search(text: search.text)
             } else {
-                List(history.entries.reversed()) { entry in
-                    HistoryRow(entry: entry)
+                List(results) { entry in
+                    HistoryRow(entry: entry) { history.remove(id: entry.id) }
                 }
             }
         }
@@ -380,6 +389,12 @@ private struct StatView: View {
 
 private struct HistoryRow: View {
     let entry: HistoryEntry
+    let onDelete: () -> Void
+
+    private func copy(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -395,14 +410,13 @@ private struct HistoryRow: View {
                 Spacer()
                 Text(entry.date, format: .dateTime.month().day().hour().minute())
                     .font(.caption).foregroundStyle(.secondary)
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(entry.finalText, forType: .string)
-                } label: {
-                    Image(systemName: "doc.on.doc")
-                }
-                .buttonStyle(.borderless)
-                .help("Copy")
+                Button { copy(entry.finalText) } label: { Image(systemName: "doc.on.doc") }
+                    .buttonStyle(.borderless)
+                    .help("Copy — then ⌘V anywhere")
+                Button(action: onDelete) { Image(systemName: "trash") }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.secondary)
+                    .help("Delete from history")
             }
             Text(entry.finalText).textSelection(.enabled)
             if entry.rawText.trimmed != entry.finalText.trimmed {
@@ -410,5 +424,11 @@ private struct HistoryRow: View {
             }
         }
         .padding(.vertical, 4)
+        .contextMenu {
+            Button("Copy") { copy(entry.finalText) }
+            Button("Copy Original Transcript") { copy(entry.rawText) }
+            Divider()
+            Button("Delete", role: .destructive, action: onDelete)
+        }
     }
 }

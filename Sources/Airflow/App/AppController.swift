@@ -272,8 +272,10 @@ final class AppController {
                 processingCount -= 1
                 publishStatus()
             }
+            var transcript: String?
             do {
                 let raw = try await activeSession.finish()
+                transcript = raw
                 if current.mode == .command, current.selectedText == nil, !current.selectionKnown {
                     current.selectedText = await TextInserter.copySelectionViaClipboard()
                 }
@@ -303,10 +305,29 @@ final class AppController {
             } catch PipelineError.emptyTranscript {
                 pill.flash("No speech detected", isError: false, seconds: 1.4)
             } catch {
-                pill.flash(error.localizedDescription, isError: true, seconds: 4)
+                // Never lose what was said: keep the raw transcript in History and for ⌃⌘V.
+                if let raw = transcript?.trimmed, !raw.isEmpty {
+                    lastInsertedText = raw
+                    if config.keepHistory, !current.isSecureField {
+                        history.add(HistoryEntry(
+                            appName: current.appName, mode: current.mode, rawText: raw,
+                            finalText: raw, audioSeconds: seconds, aiUsed: false))
+                    }
+                    pill.flash("\(error.localizedDescription) Your words are saved in History.", isError: true, seconds: 4)
+                } else {
+                    pill.flash(error.localizedDescription, isError: true, seconds: 4)
+                }
                 Sounds.error()
             }
         }
+    }
+
+    /// Copies a past dictation so it can be pasted anywhere with ⌘V.
+    func copyToClipboard(_ text: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        pill.flash("Copied — press ⌘V to paste anywhere", isError: false, seconds: 1.6)
     }
 
     private func cancelCapture(silent: Bool) {

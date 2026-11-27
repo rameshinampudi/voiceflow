@@ -24,7 +24,8 @@ Airflow recreates the core of [Wispr Flow](https://wisprflow.ai) as a small nati
 | Dictionary | Vocabulary words + forced replacements ("p m s engine" → `pms_engine`) |
 | Snippets | Say "my calendar link" → inserts the exact saved text |
 | Paste last transcript | **⌃⌘V** |
-| History & stats | Every dictation (raw + final), words today, total words, average WPM |
+| History | Everything you say is kept: **menu bar → Recent Dictations** (click to copy, then ⌘V anywhere) or **History…** (⌘Y) to search all of it, copy the edited or original text, or delete entries. Kept even when inserting fails |
+| Stats | Words today, total words, average WPM |
 | Mute music while dictating | Optional: mutes system output while you talk |
 | Works in every app | Clipboard paste with ⌘V, then your clipboard is put back |
 
@@ -90,6 +91,7 @@ AI editing uses Claude (`claude-opus-5-5` by default; Sonnet 5.5 and Haiku 5.5 a
 ```bash
 make check      # unit checks for the core logic (swift run airflow-checks)
 make app        # build build/Airflow.app
+make icon       # redraw Resources/AppIcon.icns + menu-bar glyph (scripts/make-icon.swift)
 make selftest   # print permission / engine / key status
 build/Airflow.app/Contents/MacOS/Airflow --transcribe sample.aiff --app com.tinyspeck.slackmacgap
 build/Airflow.app/Contents/MacOS/Airflow --cleanup "um so lets meet at 2 no wait 3"
@@ -118,4 +120,4 @@ Tests/AirflowChecks/      unit checks (a plain executable: the Command Line Tool
 
 - Learning new dictionary words automatically from your edits after insertion
 - Automatic language detection with the on-device engine (pick a language in Settings, or use a Whisper engine)
-- An app icon, and notarized release builds
+- Notarized release builds

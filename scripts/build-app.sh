@@ -20,7 +20,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/Airflow" "$APP/Contents/MacOS/Airflow"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
-[ -f Resources/AppIcon.icns ] && cp Resources/AppIcon.icns "$APP/Contents/Resources/"
+cp Resources/AppIcon.icns Resources/MenuBarIcon.png Resources/MenuBarIcon@2x.png "$APP/Contents/Resources/"
 
 if [ -z "$IDENTITY" ] && security find-identity -p codesigning 2>/dev/null | grep -q "$LOCAL_CERT"; then
   IDENTITY="$LOCAL_CERT"

@@ -138,4 +138,21 @@ func storageChecks(_ t: Checks) {
         t.equal(stats.wordsToday, 6)
         t.equal(stats.averageWPM, 30)
     }
+
+    t.run("history search is newest-first and covers text, transcript and app") {
+        let store = HistoryStore(fileURL: nil)
+        let first = HistoryEntry(appName: "Slack", mode: .dictation, rawText: "um ship it",
+                                 finalText: "Ship it.", audioSeconds: 2, aiUsed: true)
+        let second = HistoryEntry(appName: "Mail", mode: .dictation, rawText: "dear team",
+                                  finalText: "Dear team,", audioSeconds: 2, aiUsed: true)
+        store.add(first)
+        store.add(second)
+        t.equal(store.search("").map(\.appName), ["Mail", "Slack"])
+        t.equal(store.search("", limit: 1).map(\.appName), ["Mail"])
+        t.equal(store.search("ship").map(\.appName), ["Slack"])
+        t.equal(store.search("UM SHIP").map(\.appName), ["Slack"])
+        t.equal(store.search("mail").map(\.appName), ["Mail"])
+        store.remove(id: first.id)
+        t.equal(store.entries.map(\.appName), ["Mail"])
+    }
 }

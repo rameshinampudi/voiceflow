@@ -60,6 +60,24 @@ public final class HistoryStore: ObservableObject {
         save()
     }
 
+    public func remove(id: UUID) {
+        entries.removeAll { $0.id == id }
+        save()
+    }
+
+    /// Newest first, optionally filtered by text in the final text, original transcript or app name.
+    public func search(_ query: String, limit: Int? = nil) -> [HistoryEntry] {
+        let needle = query.trimmed
+        var result = entries.reversed().filter { entry in
+            needle.isEmpty
+                || entry.finalText.localizedCaseInsensitiveContains(needle)
+                || entry.rawText.localizedCaseInsensitiveContains(needle)
+                || (entry.appName?.localizedCaseInsensitiveContains(needle) ?? false)
+        }
+        if let limit, result.count > limit { result = Array(result.prefix(limit)) }
+        return result
+    }
+
     public func stats(now: Date = Date(), calendar: Calendar = .current) -> HistoryStats {
         let total = entries.reduce(0) { $0 + $1.wordCount }
         let today = entries
