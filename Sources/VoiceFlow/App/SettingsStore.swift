@@ -1,18 +1,18 @@
 import AVFoundation
-import AirflowCore
+import VoiceFlowCore
 import Foundation
 
 /// Live settings, saved to disk shortly after each change.
 @MainActor
 final class SettingsStore: ObservableObject {
-    @Published var config: AirflowConfig {
+    @Published var config: VoiceFlowConfig {
         didSet {
             guard config != oldValue else { return }
             onChange?(oldValue, config)
             scheduleSave()
         }
     }
-    var onChange: ((AirflowConfig, AirflowConfig) -> Void)?
+    var onChange: ((VoiceFlowConfig, VoiceFlowConfig) -> Void)?
 
     private let store: ConfigStore
     private var saveWork: DispatchWorkItem?
@@ -29,7 +29,7 @@ final class SettingsStore: ObservableObject {
         do {
             try store.save(config)
         } catch {
-            NSLog("Airflow: could not save settings: \(error)")
+            NSLog("VoiceFlow: could not save settings: \(error)")
         }
     }
 

@@ -1,12 +1,12 @@
 import AVFoundation
-import AirflowCore
+import VoiceFlowCore
 import Foundation
 import Speech
 
 /// Headless modes for testing the pipeline without the microphone or UI:
-///   Airflow --selftest                     permissions, engine and config status
-///   Airflow --transcribe <audio file>      run a file through transcription + cleanup
-///   Airflow --cleanup "<text>" [--app id]  run text through the editing step only
+///   VoiceFlow --selftest                     permissions, engine and config status
+///   VoiceFlow --transcribe <audio file>      run a file through transcription + cleanup
+///   VoiceFlow --cleanup "<text>" [--app id]  run text through the editing step only
 ///   add --no-ai to skip Claude
 enum CLI {
     static func handles(_ arguments: [String]) -> Bool {
@@ -28,7 +28,7 @@ enum CLI {
         let appID = value(after: "--app", in: arguments)
 
         if arguments.contains("--help") {
-            print("usage: Airflow [--selftest] [--transcribe <file>] [--cleanup <text>] [--app <bundle id>] [--no-ai]")
+            print("usage: VoiceFlow [--selftest] [--transcribe <file>] [--cleanup <text>] [--app <bundle id>] [--no-ai]")
             return 0
         }
         if arguments.contains("--selftest") {
@@ -45,7 +45,7 @@ enum CLI {
     }
 
     @MainActor
-    private static func selfTest(config: AirflowConfig) async {
+    private static func selfTest(config: VoiceFlowConfig) async {
         print("Config:        \(ConfigStore().fileURL.path)")
         print("Engine:        \(config.engine.label)")
         print("Language:      \(config.localeIdentifier.isEmpty ? "system (\(Locale.current.identifier))" : config.localeIdentifier)")
@@ -64,7 +64,7 @@ enum CLI {
     }
 
     @MainActor
-    private static func transcribe(path: String, config: AirflowConfig, appID: String?) async -> Int32 {
+    private static func transcribe(path: String, config: VoiceFlowConfig, appID: String?) async -> Int32 {
         let service = TranscriptionService()
         service.onAppleStateChange = { state in print("[engine] \(state.summary)") }
         await service.prepare(config: config)
@@ -90,7 +90,7 @@ enum CLI {
     }
 
     @MainActor
-    private static func cleanup(text: String, raw: String, config: AirflowConfig, appID: String?) async -> Int32 {
+    private static func cleanup(text: String, raw: String, config: VoiceFlowConfig, appID: String?) async -> Int32 {
         let category = AppClassifier.category(bundleID: appID, windowTitle: nil)
         let context = DictationContext(mode: .dictation, appName: appID, bundleID: appID, category: category)
         let started = Date()

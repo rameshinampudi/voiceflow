@@ -14,7 +14,7 @@ struct WhisperAPIClient {
         guard let url = URL(string: base + "/audio/transcriptions") else {
             throw TranscriptionError.missingConfiguration("The Whisper API URL is invalid.")
         }
-        let boundary = "airflow-\(UUID().uuidString)"
+        let boundary = "voiceflow-\(UUID().uuidString)"
         var request = URLRequest(url: url, timeoutInterval: 45)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -54,7 +54,7 @@ enum WhisperCpp {
         wav: Data, binary: String, model: String, language: String?, prompt: String?
     ) async throws -> String {
         let file = FileManager.default.temporaryDirectory
-            .appendingPathComponent("airflow-\(UUID().uuidString).wav")
+            .appendingPathComponent("voiceflow-\(UUID().uuidString).wav")
         try wav.write(to: file)
         defer { try? FileManager.default.removeItem(at: file) }
 

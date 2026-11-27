@@ -1,4 +1,4 @@
-import AirflowCore
+import VoiceFlowCore
 import AppKit
 
 /// The menu-bar icon and its menu, including a Recent Dictations list you can copy from.
@@ -55,7 +55,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(item("History…", #selector(showHistory), key: "y"))
         menu.addItem(item("Settings…", #selector(showSettings), key: ","))
         menu.addItem(.separator())
-        menu.addItem(item("Quit Airflow", #selector(quit), key: "q"))
+        menu.addItem(item("Quit VoiceFlow", #selector(quit), key: "q"))
         self.item.menu = menu
     }
 
@@ -106,14 +106,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         return menuItem
     }
 
-    /// nil = the Airflow brand glyph (mic turning into text); otherwise an SF Symbol for the state.
+    /// nil = the VoiceFlow brand glyph (mic turning into text); otherwise an SF Symbol for the state.
     private func setIcon(_ symbol: String?) {
         let image: NSImage?
         if let symbol {
-            image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Airflow")
+            image = NSImage(systemSymbolName: symbol, accessibilityDescription: "VoiceFlow")
         } else {
             image = NSImage(named: "MenuBarIcon")
-                ?? NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Airflow")
+                ?? NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "VoiceFlow")
         }
         image?.isTemplate = true
         item.button?.image = image

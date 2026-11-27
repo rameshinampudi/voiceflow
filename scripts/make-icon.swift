@@ -1,4 +1,4 @@
-// Draws Airflow's icon from code — a microphone whose voice waves straighten into
+// Draws VoiceFlow's icon from code — a microphone whose voice waves straighten into
 // typed lines of text, ending in a text cursor — and writes:
 //   Resources/AppIcon.icns                 app icon (Finder, Dock, permission lists)
 //   Resources/MenuBarIcon.png / @2x.png    monochrome template for the menu bar

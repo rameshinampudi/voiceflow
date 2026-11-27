@@ -1,4 +1,4 @@
-import AirflowCore
+import VoiceFlowCore
 import Foundation
 
 private struct FakeRewriter: TextRewriter {
@@ -12,7 +12,7 @@ private struct Offline: Error, LocalizedError {
 
 func pipelineChecks(_ t: Checks) async {
     await t.runAsync("AI path keeps snippets exact and joins spacing") {
-        var config = AirflowConfig()
+        var config = VoiceFlowConfig()
         config.snippets = [Snippet(trigger: "my calendar link", expansion: "https://cal.example/me")]
         let rewriter = FakeRewriter { system, user in
             guard system == PromptBuilder.dictationSystemPrompt, user.contains("Book time here ⟦S1⟧") else {
@@ -29,7 +29,7 @@ func pipelineChecks(_ t: Checks) async {
     }
 
     await t.runAsync("falls back to offline cleanup when Claude fails") {
-        let output = try await DictationPipeline(config: AirflowConfig(), rewriter: FakeRewriter { _, _ in throw Offline() })
+        let output = try await DictationPipeline(config: VoiceFlowConfig(), rewriter: FakeRewriter { _, _ in throw Offline() })
             .run(transcript: "um, hello there", context: DictationContext())
         t.equal(output.text, "Hello there")
         t.expect(!output.aiUsed)
@@ -37,13 +37,13 @@ func pipelineChecks(_ t: Checks) async {
     }
 
     await t.runAsync("no key means offline cleanup") {
-        let output = try await DictationPipeline(config: AirflowConfig(), rewriter: nil)
+        let output = try await DictationPipeline(config: VoiceFlowConfig(), rewriter: nil)
             .run(transcript: "uh testing new line one two", context: DictationContext())
         t.equal(output.text, "Testing\nOne two")
     }
 
     await t.runAsync("empty transcript throws") {
-        let pipeline = DictationPipeline(config: AirflowConfig(), rewriter: nil)
+        let pipeline = DictationPipeline(config: VoiceFlowConfig(), rewriter: nil)
         await t.throwsErrorAsync(PipelineError.emptyTranscript) {
             _ = try await pipeline.run(transcript: "  ", context: DictationContext())
         }
@@ -54,7 +54,7 @@ func pipelineChecks(_ t: Checks) async {
 
     await t.runAsync("command mode needs AI") {
         await t.throwsErrorAsync(PipelineError.commandNeedsAI) {
-            _ = try await DictationPipeline(config: AirflowConfig(), rewriter: nil)
+            _ = try await DictationPipeline(config: VoiceFlowConfig(), rewriter: nil)
                 .run(transcript: "make it shorter", context: DictationContext(mode: .command))
         }
     }
@@ -67,13 +67,13 @@ func pipelineChecks(_ t: Checks) async {
             return "Could you please send it?"
         }
         let context = DictationContext(mode: .command, precedingText: "x", selectedText: "hey send it")
-        let output = try await DictationPipeline(config: AirflowConfig(), rewriter: rewriter)
+        let output = try await DictationPipeline(config: VoiceFlowConfig(), rewriter: rewriter)
             .run(transcript: "make this polite", context: context)
         t.equal(output.text, "Could you please send it?")
     }
 
     await t.runAsync("dictionary replacements run before AI") {
-        var config = AirflowConfig()
+        var config = VoiceFlowConfig()
         config.replacements = [Replacement(heard: "hubble app", written: "Hubble")]
         let rewriter = FakeRewriter { _, user in
             user.contains("open Hubble now") ? "Open Hubble now." : "WRONG PROMPT"
@@ -84,7 +84,7 @@ func pipelineChecks(_ t: Checks) async {
     }
 
     t.run("makeDefault respects the toggle and the key") {
-        var config = AirflowConfig()
+        var config = VoiceFlowConfig()
         config.anthropicAPIKey = "sk-x"
         t.expect(DictationPipeline.makeDefault(config: config).rewriter != nil)
         config.aiCleanupEnabled = false
@@ -95,7 +95,7 @@ func pipelineChecks(_ t: Checks) async {
 func storageChecks(_ t: Checks) {
     t.run("partial config fills in defaults") {
         let json = #"{"hotkeySide":"right","engine":"nonsense","vocabulary":["Electrum"]}"#
-        let config = try JSONDecoder().decode(AirflowConfig.self, from: Data(json.utf8))
+        let config = try JSONDecoder().decode(VoiceFlowConfig.self, from: Data(json.utf8))
         t.equal(config.hotkeySide, .right)
         t.equal(config.engine, .appleOnDevice)
         t.equal(config.vocabulary, ["Electrum"])
@@ -104,10 +104,10 @@ func storageChecks(_ t: Checks) {
     }
 
     t.run("config round-trips with private file permissions") {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("airflow-check-\(UUID())")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("voiceflow-check-\(UUID())")
         defer { try? FileManager.default.removeItem(at: dir) }
         let store = ConfigStore(directory: dir)
-        var config = AirflowConfig()
+        var config = VoiceFlowConfig()
         config.styles[.code] = .casual
         config.snippets = [Snippet(trigger: "sig", expansion: "Thanks,\nAlex")]
         try store.save(config)

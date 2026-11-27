@@ -22,16 +22,16 @@ public enum PipelineError: Error, LocalizedError, Equatable {
 
 /// Raw transcript → final text: dictionary, snippets, AI editing (or offline cleanup), spacing.
 public struct DictationPipeline: Sendable {
-    public var config: AirflowConfig
+    public var config: VoiceFlowConfig
     public var rewriter: TextRewriter?
 
-    public init(config: AirflowConfig, rewriter: TextRewriter?) {
+    public init(config: VoiceFlowConfig, rewriter: TextRewriter?) {
         self.config = config
         self.rewriter = rewriter
     }
 
     /// Uses Claude when AI editing is on and a key is available.
-    public static func makeDefault(config: AirflowConfig) -> DictationPipeline {
+    public static func makeDefault(config: VoiceFlowConfig) -> DictationPipeline {
         let key = config.effectiveAnthropicKey
         let rewriter: TextRewriter? = (config.aiCleanupEnabled && !key.isEmpty)
             ? ClaudeRewriter(apiKey: key, model: config.claudeModel, effort: config.claudeEffort)

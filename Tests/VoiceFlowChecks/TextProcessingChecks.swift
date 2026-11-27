@@ -1,4 +1,4 @@
-import AirflowCore
+import VoiceFlowCore
 
 func textProcessingChecks(_ t: Checks) {
     t.run("offline cleanup removes fillers and fixes punctuation") {

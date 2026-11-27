@@ -1,5 +1,5 @@
 import AVFoundation
-import AirflowCore
+import VoiceFlowCore
 import AppKit
 
 enum AppStatus: Equatable {
@@ -11,7 +11,7 @@ enum AppStatus: Equatable {
 
     var menuTitle: String {
         switch self {
-        case .ready: return "Airflow is ready"
+        case .ready: return "VoiceFlow is ready"
         case let .listening(handsFree, command):
             return command ? "Listening for a command…" : (handsFree ? "Listening (hands-free)…" : "Listening…")
         case .processing: return "Transcribing…"
@@ -95,7 +95,7 @@ final class AppController {
         hotkeys.stop()
     }
 
-    func settingsChanged(old: AirflowConfig, new: AirflowConfig) {
+    func settingsChanged(old: VoiceFlowConfig, new: VoiceFlowConfig) {
         hotkeys.side = new.hotkeySide
         if old.showIdleBar != new.showIdleBar { publishStatus() }
         if old.engine != new.engine || old.localeIdentifier != new.localeIdentifier {
@@ -391,7 +391,7 @@ final class AppController {
 
     private func idleStatus(for status: AppStatus) -> IdleStatus {
         if case .needsAccessibility = status {
-            return .needsPermission("Allow Accessibility so ⌥ works — see Airflow's menu")
+            return .needsPermission("Allow Accessibility so ⌥ works — see VoiceFlow's menu")
         }
         if Permissions.microphoneStatus == .denied || Permissions.microphoneStatus == .restricted {
             return .needsPermission("Microphone access is off")

@@ -1,4 +1,4 @@
-import AirflowCore
+import VoiceFlowCore
 import AppKit
 import SwiftUI
 
@@ -88,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(settingsItem)
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        appMenu.addItem(withTitle: "Quit Airflow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: "Quit VoiceFlow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
@@ -132,7 +132,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
                 contentRect: NSRect(x: 0, y: 0, width: 700, height: 600),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered, defer: false)
-            window.title = "Airflow"
+            window.title = "VoiceFlow"
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(
                 rootView: SettingsView(store: store, history: history, ui: ui, actions: actions))

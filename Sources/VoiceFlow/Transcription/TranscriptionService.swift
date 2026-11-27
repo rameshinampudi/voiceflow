@@ -1,5 +1,5 @@
 import AVFoundation
-import AirflowCore
+import VoiceFlowCore
 import Foundation
 
 /// One dictation's worth of audio → text. `append` is called on the audio thread.
@@ -53,7 +53,7 @@ final class TranscriptionService {
     }
     var onAppleStateChange: ((AppleState) -> Void)?
 
-    func prepare(config: AirflowConfig, force: Bool = false) async {
+    func prepare(config: VoiceFlowConfig, force: Bool = false) async {
         guard config.engine == .appleOnDevice else { return }
         if !force, preparedFor == config.localeIdentifier, case .ready = appleState { return }
         if case .preparing = appleState, !force { return }
@@ -75,7 +75,7 @@ final class TranscriptionService {
         }
     }
 
-    func makeSession(config: AirflowConfig) throws -> TranscriptionSession {
+    func makeSession(config: VoiceFlowConfig) throws -> TranscriptionSession {
         let language = Self.languageCode(config.localeIdentifier)
         let vocabulary = config.vocabulary.map(\.trimmed).filter { !$0.isEmpty }
         let prompt = vocabulary.isEmpty ? nil : vocabulary.joined(separator: ", ")

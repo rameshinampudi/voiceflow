@@ -2,7 +2,7 @@ import Foundation
 import ServiceManagement
 
 /// "Open at Login" via SMAppService — shows up in System Settings → General → Login Items,
-/// and starts Airflow every time you log in, including after a restart.
+/// and starts VoiceFlow every time you log in, including after a restart.
 enum LoginItem {
     struct Result {
         var note: String?
@@ -23,7 +23,7 @@ enum LoginItem {
         do {
             if enabled {
                 guard isInstalledCopy else {
-                    return Result(note: "Install Airflow with `make install` so it can start at login.", needsApproval: false)
+                    return Result(note: "Install VoiceFlow with `make install` so it can start at login.", needsApproval: false)
                 }
                 if service.status != .enabled { try service.register() }
             } else if service.status == .enabled || service.status == .requiresApproval {
@@ -42,9 +42,9 @@ enum LoginItem {
     static func describe(_ status: SMAppService.Status, enabled: Bool) -> Result {
         switch status {
         case .enabled:
-            return Result(note: "Airflow starts automatically when you log in, including after a restart.", needsApproval: false)
+            return Result(note: "VoiceFlow starts automatically when you log in, including after a restart.", needsApproval: false)
         case .requiresApproval:
-            return Result(note: "macOS needs your OK: allow Airflow in System Settings → General → Login Items.", needsApproval: true)
+            return Result(note: "macOS needs your OK: allow VoiceFlow in System Settings → General → Login Items.", needsApproval: true)
         default:
             return Result(note: nil, needsApproval: false)
         }

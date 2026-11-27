@@ -1,5 +1,5 @@
 import AVFoundation
-import AirflowCore
+import VoiceFlowCore
 import Combine
 import ServiceManagement
 import SwiftUI
@@ -88,12 +88,12 @@ private struct GeneralTab: View {
             }
 
             Section("Behavior") {
-                Toggle("Show the Airflow dot at the bottom of the screen", isOn: $store.config.showIdleBar)
+                Toggle("Show the VoiceFlow dot at the bottom of the screen", isOn: $store.config.showIdleBar)
                 Toggle("Play start and stop sounds", isOn: $store.config.playSounds)
                 Toggle("Mute other audio while dictating", isOn: $store.config.muteAudioWhileDictating)
                 Toggle("Restore my clipboard after inserting", isOn: $store.config.restoreClipboard)
                 Toggle("Keep dictation history", isOn: $store.config.keepHistory)
-                Toggle("Open Airflow at login (and after every restart)", isOn: $store.config.launchAtLogin)
+                Toggle("Open VoiceFlow at login (and after every restart)", isOn: $store.config.launchAtLogin)
                 if let note = ui.loginItemNote {
                     HStack {
                         Text(note).font(.caption)
@@ -207,13 +207,13 @@ private struct AIEditingTab: View {
                 Toggle("Clean up and format with Claude", isOn: $store.config.aiCleanupEnabled)
                 SecureField("Anthropic API key", text: $store.config.anthropicAPIKey, prompt: Text("sk-ant-…"))
                 Picker("Model", selection: $store.config.claudeModel) {
-                    ForEach(AirflowConfig.claudeModels, id: \.self) { Text($0).tag($0) }
+                    ForEach(VoiceFlowConfig.claudeModels, id: \.self) { Text($0).tag($0) }
                 }
                 Picker("Effort", selection: $store.config.claudeEffort) {
-                    ForEach(AirflowConfig.effortLevels, id: \.self) { Text($0.capitalized).tag($0) }
+                    ForEach(VoiceFlowConfig.effortLevels, id: \.self) { Text($0.capitalized).tag($0) }
                 }
                 Toggle("Use the text around my cursor as context", isOn: $store.config.useScreenContext)
-                Text("Claude removes filler words, applies your self-corrections (\"at 2, no, 3\"), fixes punctuation and formats lists. Opus 5.5 is the most accurate; Haiku 5.5 is the fastest and cheapest. Without a key, Airflow does basic offline cleanup. Command Mode needs a key.")
+                Text("Claude removes filler words, applies your self-corrections (\"at 2, no, 3\"), fixes punctuation and formats lists. Opus 5.5 is the most accurate; Haiku 5.5 is the fastest and cheapest. Without a key, VoiceFlow does basic offline cleanup. Command Mode needs a key.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -305,7 +305,7 @@ private struct DictionaryTab: View {
             } header: {
                 Text("Snippets")
             } footer: {
-                Text("Say the phrase and Airflow inserts the full text exactly, e.g. \"my calendar link\".")
+                Text("Say the phrase and VoiceFlow inserts the full text exactly, e.g. \"my calendar link\".")
             }
         }
         .formStyle(.grouped)

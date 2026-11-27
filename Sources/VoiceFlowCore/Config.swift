@@ -104,16 +104,16 @@ public struct Replacement: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
-public struct AirflowConfig: Codable, Equatable, Sendable {
+public struct VoiceFlowConfig: Codable, Equatable, Sendable {
     // General
     public var hotkeySide: HotkeySide = .either
     public var playSounds: Bool = true
     public var muteAudioWhileDictating: Bool = false
     public var restoreClipboard: Bool = true
     public var keepHistory: Bool = true
-    /// Keep a small breathing dot at the bottom of the screen while Airflow is ready.
+    /// Keep a small breathing dot at the bottom of the screen while VoiceFlow is ready.
     public var showIdleBar: Bool = true
-    /// Open Airflow automatically at login (and so after every restart).
+    /// Open VoiceFlow automatically at login (and so after every restart).
     public var launchAtLogin: Bool = true
 
     // Transcription
@@ -133,7 +133,7 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
     public var claudeEffort: String = "low"
     public var useScreenContext: Bool = true
     public var customInstructions: String = ""
-    public var styles: [AppCategory: WritingStyle] = AirflowConfig.defaultStyles
+    public var styles: [AppCategory: WritingStyle] = VoiceFlowConfig.defaultStyles
 
     // Personalization
     public var vocabulary: [String] = []
@@ -175,7 +175,7 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
         func value<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
             ((try? c.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
         }
-        let d = AirflowConfig()
+        let d = VoiceFlowConfig()
         hotkeySide = value(.hotkeySide, d.hotkeySide)
         playSounds = value(.playSounds, d.playSounds)
         muteAudioWhileDictating = value(.muteAudioWhileDictating, d.muteAudioWhileDictating)
@@ -203,7 +203,7 @@ public struct AirflowConfig: Codable, Equatable, Sendable {
     }
 }
 
-/// Reads and writes `~/Library/Application Support/Airflow/config.json` (mode 0600 — it holds API keys).
+/// Reads and writes `~/Library/Application Support/VoiceFlow/config.json` (mode 0600 — it holds API keys).
 public final class ConfigStore {
     public let directory: URL
     public var fileURL: URL { directory.appendingPathComponent("config.json") }
@@ -214,17 +214,17 @@ public final class ConfigStore {
 
     public static var defaultDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Airflow", isDirectory: true)
+            .appendingPathComponent("VoiceFlow", isDirectory: true)
     }
 
-    public func load() -> AirflowConfig {
+    public func load() -> VoiceFlowConfig {
         guard let data = try? Data(contentsOf: fileURL),
-              let config = try? JSONDecoder().decode(AirflowConfig.self, from: data)
-        else { return AirflowConfig() }
+              let config = try? JSONDecoder().decode(VoiceFlowConfig.self, from: data)
+        else { return VoiceFlowConfig() }
         return config
     }
 
-    public func save(_ config: AirflowConfig) throws {
+    public func save(_ config: VoiceFlowConfig) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

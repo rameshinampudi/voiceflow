@@ -1,4 +1,4 @@
-import AirflowCore
+import VoiceFlowCore
 
 private func down(_ time: Double, control: Bool = false, others: Bool = false) -> HotkeyEvent {
     .triggerDown(time: time, controlHeld: control, otherModifiersHeld: others)

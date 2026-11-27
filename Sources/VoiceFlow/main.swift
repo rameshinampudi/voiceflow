@@ -1,6 +1,6 @@
 import AppKit
 
-// `Airflow --selftest`, `--transcribe <file>`, `--cleanup "<text>"`: headless checks, no UI.
+// `VoiceFlow --selftest`, `--transcribe <file>`, `--cleanup "<text>"`: headless checks, no UI.
 if CLI.handles(CommandLine.arguments) {
     CLI.run(CommandLine.arguments)
 }

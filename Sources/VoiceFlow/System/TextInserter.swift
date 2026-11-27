@@ -5,7 +5,7 @@ import CoreGraphics
 @MainActor
 enum TextInserter {
     /// Tags our synthetic key events so the hotkey tap ignores them.
-    static let syntheticEventMarker: Int64 = 0x41_49_52  // "AIR"
+    static let syntheticEventMarker: Int64 = 0x56_46_4C  // "VFL"
 
     enum Outcome { case pasted, pastedAndKeptOnClipboard }
 

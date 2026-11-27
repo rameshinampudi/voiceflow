@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// What the resting bar says about Airflow.
+/// What the resting bar says about VoiceFlow.
 enum IdleStatus: Equatable {
     case ready
     case needsPermission(String)
@@ -32,7 +32,7 @@ final class PillModel: ObservableObject {
 }
 
 /// The floating bar at the bottom of the screen (Wispr's "Flow bar").
-/// At rest it's a small breathing dot so you can see Airflow is running; while you talk it
+/// At rest it's a small breathing dot so you can see VoiceFlow is running; while you talk it
 /// grows into a live voice meter.
 @MainActor
 final class FlowPillController {
@@ -111,8 +111,8 @@ final class FlowPillController {
 
 // MARK: - Views
 
-private let airflowCyan = Color(red: 0.45, green: 0.80, blue: 1.0)
-private let airflowViolet = Color(red: 0.62, green: 0.55, blue: 1.0)
+private let brandCyan = Color(red: 0.45, green: 0.80, blue: 1.0)
+private let brandViolet = Color(red: 0.62, green: 0.55, blue: 1.0)
 
 struct PillView: View {
     @ObservedObject var model: PillModel
@@ -149,7 +149,7 @@ struct PillView: View {
     @ViewBuilder private var activeContent: some View {
         switch model.state {
         case let .listening(command, handsFree):
-            let tint = command ? airflowViolet : airflowCyan
+            let tint = command ? brandViolet : brandCyan
             ZStack {
                 Circle()
                     .fill(tint.opacity(0.28))
@@ -167,7 +167,7 @@ struct PillView: View {
                     .foregroundStyle(.white.opacity(0.55))
             }
         case let .processing(command):
-            ProcessingDots(tint: command ? airflowViolet : airflowCyan)
+            ProcessingDots(tint: command ? brandViolet : brandCyan)
         case let .message(text, isError):
             Image(systemName: isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                 .foregroundStyle(isError ? Color.orange : Color.green)
@@ -187,9 +187,9 @@ struct IdleBar: View {
 
     private var color: Color {
         switch status {
-        case .ready: return airflowCyan
+        case .ready: return brandCyan
         case .needsPermission: return .orange
-        case .preparing: return airflowViolet
+        case .preparing: return brandViolet
         }
     }
 

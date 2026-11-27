@@ -105,7 +105,7 @@ public final class HistoryStore: ObservableObject {
             try encoder.encode(entries).write(to: url, options: .atomic)
             try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
         } catch {
-            NSLog("Airflow: could not save history: \(error)")
+            NSLog("VoiceFlow: could not save history: \(error)")
         }
     }
 }

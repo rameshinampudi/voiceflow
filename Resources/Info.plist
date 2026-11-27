@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>local.airflow.dictation</string>
+	<string>local.voiceflow.dictation</string>
 	<key>CFBundleName</key>
-	<string>Airflow</string>
+	<string>VoiceFlow</string>
 	<key>CFBundleDisplayName</key>
-	<string>Airflow</string>
+	<string>VoiceFlow</string>
 	<key>CFBundleExecutable</key>
-	<string>Airflow</string>
+	<string>VoiceFlow</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundlePackageType</key>
@@ -31,8 +31,8 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Airflow listens only while you hold the Option key, then turns your speech into text.</string>
+	<string>VoiceFlow listens only while you hold the Option key, then turns your speech into text.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Airflow transcribes your speech on this Mac.</string>
+	<string>VoiceFlow transcribes your speech on this Mac.</string>
 </dict>
 </plist>
