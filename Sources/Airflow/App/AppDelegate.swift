@@ -44,8 +44,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         settings.onChange = { [weak self] old, new in
             self?.controller.settingsChanged(old: old, new: new)
+            if old.launchAtLogin != new.launchAtLogin { self?.applyLoginItem(new.launchAtLogin) }
         }
         controller.start()
+        // Re-assert every launch, so it stays registered across updates and reinstalls.
+        applyLoginItem(settings.config.launchAtLogin)
 
         // First run (or a permission was revoked): walk the user through it. The system
         // Accessibility prompt registers *this* signed build in System Settings, so the
@@ -62,6 +65,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         controller?.shutdown()
         settings?.saveNow()
+    }
+
+    private func applyLoginItem(_ enabled: Bool) {
+        let result = LoginItem.apply(enabled)
+        ui.loginItemNote = result.note
+        ui.loginItemNeedsApproval = result.needsApproval
     }
 
     @objc private func openSettingsFromMenu() {

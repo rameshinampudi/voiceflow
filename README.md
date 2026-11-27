@@ -49,6 +49,8 @@ On first launch the Settings window opens. Grant:
 2. **Accessibility** — to notice the Option key in any app and paste into the focused field.
    System Settings → Privacy & Security → Accessibility → enable **Airflow**.
 
+Airflow adds itself to **System Settings → General → Login Items** the first time the installed copy runs, so it starts every time you log in, including after a restart. Turn this off in **Settings → General → Open Airflow at login**.
+
 Then, in **Settings → AI Editing**, paste your Anthropic API key. Without a key Airflow still works, using basic offline cleanup (filler removal, "new line", capitalization).
 
 **Keep permissions across rebuilds (recommended for development).** macOS ties permissions to the app's code signature, and an ad-hoc signature changes on every build. Run once:

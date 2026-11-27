@@ -53,6 +53,8 @@ final class UIState: ObservableObject {
     @Published var microphoneStatus = Permissions.microphoneStatus
     @Published var engineStatus = "Not prepared yet"
     @Published var status: AppStatus = .ready
+    @Published var loginItemNote: String?
+    @Published var loginItemNeedsApproval = false
 
     func refreshPermissions() {
         let ax = Permissions.accessibilityTrusted

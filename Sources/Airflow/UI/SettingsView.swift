@@ -47,22 +47,6 @@ struct SettingsView: View {
 // its plugin, so view-local state lives in small ObservableObjects via `@StateObject`.
 
 @MainActor
-private final class LoginItemModel: ObservableObject {
-    @Published var enabled = SMAppService.mainApp.status == .enabled
-    @Published var error: String?
-
-    func set(_ enabled: Bool) {
-        do {
-            if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-            error = nil
-        } catch {
-            self.error = "Couldn't change login item: \(error.localizedDescription)"
-        }
-        self.enabled = SMAppService.mainApp.status == .enabled
-    }
-}
-
-@MainActor
 private final class DraftText: ObservableObject {
     @Published var text = ""
 }
@@ -71,7 +55,6 @@ private struct GeneralTab: View {
     @ObservedObject var store: SettingsStore
     @ObservedObject var ui: UIState
     let actions: SettingsActions
-    @StateObject private var login = LoginItemModel()
 
     var body: some View {
         Form {
@@ -110,9 +93,16 @@ private struct GeneralTab: View {
                 Toggle("Mute other audio while dictating", isOn: $store.config.muteAudioWhileDictating)
                 Toggle("Restore my clipboard after inserting", isOn: $store.config.restoreClipboard)
                 Toggle("Keep dictation history", isOn: $store.config.keepHistory)
-                Toggle("Launch Airflow at login", isOn: Binding(get: { login.enabled }, set: { login.set($0) }))
-                if let error = login.error {
-                    Text(error).font(.caption).foregroundStyle(.red)
+                Toggle("Open Airflow at login (and after every restart)", isOn: $store.config.launchAtLogin)
+                if let note = ui.loginItemNote {
+                    HStack {
+                        Text(note).font(.caption)
+                            .foregroundStyle(ui.loginItemNeedsApproval ? Color.orange : Color.secondary)
+                        if ui.loginItemNeedsApproval {
+                            Spacer()
+                            Button("Open Login Items") { SMAppService.openSystemSettingsLoginItems() }
+                        }
+                    }
                 }
             }
 
